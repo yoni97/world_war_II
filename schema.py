@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import graphene
 from graphene_sqlalchemy import SQLAlchemyObjectType
 from database.db import db_session
@@ -19,18 +21,6 @@ class Country(SQLAlchemyObjectType):
         interfaces = (graphene.relay.Node,)
 
 class Mission(SQLAlchemyObjectType):
-    # class MissionType(ObjectType):
-    #     mission_id = Int()
-    #     mission_date = Date()
-    #     airborne_aircraft = Float()
-    #     attacking_aircraft = Float()
-    #     bombing_aircraft = Float()
-    #     aircraft_returned = Float()
-    #     aircraft_failed = Float()
-    #     aircraft_damaged = Float()
-    #     aircraft_lost = Float()
-    #
-    # targets = List(TargetGraphQL)
     class Meta:
         model = MissionModel
         interfaces = (graphene.relay.Node,)
@@ -48,24 +38,64 @@ class TargetType(SQLAlchemyObjectType):
 class Query(graphene.ObjectType):
     country_by_id = graphene.Field(Country, id=graphene.Int(required=True))
     mission_by_id = graphene.Field(Mission, id=graphene.Int(required=True))
-
+    missions_between_dates = (graphene.List(Mission,
+                                            start_date=graphene.String(required=True),
+                                            end_date=graphene.String(required=True)))
+    # find mission by country
+    missions_by_country = graphene.List(Mission, country_id=graphene.Int(required=True))
+    # find mission by target industry
+    missions_by_target_industry = graphene.List(Mission, target_industry=graphene.String(required=True))
 
     @staticmethod
     def resolve_country_by_id(root, info, id):
-        return db_session.query(CountryModel).get(id) if id else None
+        country = db_session.query(CountryModel).get(id)
+        if country:
+            return country
+        return None
 
     @staticmethod
     def resolve_mission_by_id(root, info, id):
-        return db_session.query(MissionModel).get(id) if id else None
-    # users_by_name = graphene.List(User, name_substring=graphene.String(required=True))
-    # subjects_by_name = graphene.List(Subject, name_substring=graphene.String(required=True))
-    # users_by_subject = graphene.List(User, subject_id=graphene.Int(required=True))
-    #
-    # subjects_by_user = graphene.List(Subject, user_id=graphene.Int(required=True))
-    # users_by_age = graphene.List(User, age=graphene.Int(required=True))
-    # users_by_age_range = graphene.List(User, min_age=graphene.Int(required=True), max_age=graphene.Int(required=True))
-    # users_by_birth_date = graphene.List(User, birth_date=graphene.String(required=True))
-    # users_by_country = graphene.List(User, country=graphene.String(required=True))
+        mission = db_session.query(MissionModel).get(id)
+        if mission:
+            return mission
+        return None
+
+    @staticmethod
+    def resolve_missions_between_dates(root, info, start_date=None, end_date=None):
+        session = db_session()
+        start = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end = datetime.strptime(end_date, '%Y-%m-%d').date()
+        return (
+            session.query(MissionModel)
+            .filter(MissionModel.mission_date >= start)
+            .filter(MissionModel.mission_date <= end)
+            .all()
+        )
+
+    @staticmethod
+    def resolve_missions_by_country(self, info, country_id):
+        session = db_session()
+        return (
+            session.query(Mission)
+            .join(Mission.targets)
+            .join(Target.city)
+            .join(City.country)
+            .filter(Country.country_id == country_id)
+            .all()
+        )
+
+    @staticmethod
+    def resolve_missions_by_target_industry(self, info, target_industry):
+        session = db_session()
+        return (
+            session.query(Mission)
+            .join(Mission.targets)
+            .filter(TargetModel.target_industry == target_industry)
+            .all()
+        )
+
+    ###############################
+
 
 
     # def resolve_users_by_name(self, info, name_substring):
