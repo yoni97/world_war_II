@@ -1,7 +1,7 @@
 # pip install -r requirements.txt
 from flask import Flask
 from flask_graphql import GraphQLView
-from database.db import db_session, init_db, connection_url
+from database.db import db_session, connection_url, test_connection
 from schema import schema
 
 
@@ -12,8 +12,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = connection_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 with app.app_context():
-    init_db()
-
+    test_connection
 
 app.add_url_rule(
     '/graphql',

@@ -1,9 +1,11 @@
 import graphene
 from graphene_sqlalchemy import SQLAlchemyObjectType
-from datetime import datetime, date
 from database.db import db_session
-from models.cities import CityModel
+from models.all_cities import CityModel
 from models.countries import CountryModel
+from models.missions import MissionModel
+from models.targets import TargetModel
+from models.targettypes import TargetTypeModel
 
 
 class City(SQLAlchemyObjectType):
@@ -11,15 +13,50 @@ class City(SQLAlchemyObjectType):
         model = CityModel
         interfaces = (graphene.relay.Node,)
 
-
 class Country(SQLAlchemyObjectType):
     class Meta:
         model = CountryModel
         interfaces = (graphene.relay.Node,)
 
+class Mission(SQLAlchemyObjectType):
+    # class MissionType(ObjectType):
+    #     mission_id = Int()
+    #     mission_date = Date()
+    #     airborne_aircraft = Float()
+    #     attacking_aircraft = Float()
+    #     bombing_aircraft = Float()
+    #     aircraft_returned = Float()
+    #     aircraft_failed = Float()
+    #     aircraft_damaged = Float()
+    #     aircraft_lost = Float()
+    #
+    # targets = List(TargetGraphQL)
+    class Meta:
+        model = MissionModel
+        interfaces = (graphene.relay.Node,)
+
+class Target(SQLAlchemyObjectType):
+    class Meta:
+        model = TargetModel
+        interfaces = (graphene.relay.Node,)
+
+class TargetType(SQLAlchemyObjectType):
+    class Meta:
+        model = TargetTypeModel
+        interfaces = (graphene.relay.Node,)
 
 class Query(graphene.ObjectType):
     country_by_id = graphene.Field(Country, id=graphene.Int(required=True))
+    mission_by_id = graphene.Field(Mission, id=graphene.Int(required=True))
+
+
+    @staticmethod
+    def resolve_country_by_id(root, info, id):
+        return db_session.query(CountryModel).get(id) if id else None
+
+    @staticmethod
+    def resolve_mission_by_id(root, info, id):
+        return db_session.query(MissionModel).get(id) if id else None
     # users_by_name = graphene.List(User, name_substring=graphene.String(required=True))
     # subjects_by_name = graphene.List(Subject, name_substring=graphene.String(required=True))
     # users_by_subject = graphene.List(User, subject_id=graphene.Int(required=True))
@@ -30,8 +67,6 @@ class Query(graphene.ObjectType):
     # users_by_birth_date = graphene.List(User, birth_date=graphene.String(required=True))
     # users_by_country = graphene.List(User, country=graphene.String(required=True))
 
-    def resolve_country_by_id(self, info, id):
-        return db_session.query(CountryModel).get(id)
 
     # def resolve_users_by_name(self, info, name_substring):
     #     substring = f"%{name_substring}%"

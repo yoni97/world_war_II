@@ -1,7 +1,7 @@
 from flask import session
 from sqlalchemy import Column, Integer, String, Table, ForeignKey, Index
 from sqlalchemy.orm import relationship
-from Base.base import Base
+from database.db import Base
 
 class CityModel(Base):
     __tablename__ = 'cities'
@@ -13,3 +13,5 @@ class CityModel(Base):
 
     country = relationship('CountryModel', back_populates='cities')
     targets_city = relationship('TargetModel', back_populates='city')
+
+

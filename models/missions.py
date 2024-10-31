@@ -1,7 +1,7 @@
 from flask import session
 from sqlalchemy import Column, Integer, String, Date, Table, ForeignKey, Index, Float
 from sqlalchemy.orm import relationship
-from Base.base import Base
+from database.db import Base
 
 class MissionModel(Base):
     __tablename__ = 'missions'
@@ -15,6 +15,6 @@ class MissionModel(Base):
     aircraft_damaged = Column(Float)
     aircraft_lost = Column(Float)
 
-    targets_mission = relationship("MissionModel", back_populates="mission")
+    targets = relationship("TargetModel", back_populates="mission")
 
 

@@ -1,7 +1,7 @@
 from flask import session
-from sqlalchemy import Column, Integer, String, Date, Table, ForeignKey, Index
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
-from Base.base import Base
+from database.db import Base
 
 class TargetModel(Base):
     __tablename__ = 'targets'
@@ -13,7 +13,7 @@ class TargetModel(Base):
     city = relationship('CityModel', back_populates='targets_city')
 
     mission_id = Column(Integer, ForeignKey('missions.mission_id'))
-    mission = relationship('MissionModel', back_populates='targets_mission')
+    mission = relationship('MissionModel', back_populates='targets')
 
     target_type_id = Column(Integer, ForeignKey('targettypes.target_type_id'))
-    target_type = relationship('TargetTypeModel', back_populates='targets_')
+    target_type = relationship('TargetTypeModel', back_populates='targets_type')

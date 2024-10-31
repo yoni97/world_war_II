@@ -18,7 +18,7 @@ services:
     ports:
       - "5001:5001"
     environment:
-      - DATABASE_URL=postgresql://admin:1234@db:5432/missions_db
+      - DATABASE_URL=postgresql://admin:1234@localhost:5432/missions_db
 
 volumes:
   db_data:
