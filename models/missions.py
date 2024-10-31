@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, Date, Table, ForeignKey, Index, 
 from sqlalchemy.orm import relationship
 from Base.base import Base
 
-class Mission(Base):
+class MissionModel(Base):
     __tablename__ = 'missions'
     mission_id = Column(Integer, primary_key=True)
     mission_date = Column(Date)
@@ -14,5 +14,7 @@ class Mission(Base):
     aircraft_failed = Column(Float)
     aircraft_damaged = Column(Float)
     aircraft_lost = Column(Float)
+
+    targets_mission = relationship("MissionModel", back_populates="mission")
 
 
