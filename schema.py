@@ -15,31 +15,37 @@ class City(SQLAlchemyObjectType):
         model = CityModel
         interfaces = (graphene.relay.Node,)
 
+
 class Country(SQLAlchemyObjectType):
     class Meta:
         model = CountryModel
         interfaces = (graphene.relay.Node,)
+
 
 class Mission(SQLAlchemyObjectType):
     class Meta:
         model = MissionModel
         interfaces = (graphene.relay.Node,)
 
+
 class Target(SQLAlchemyObjectType):
     class Meta:
         model = TargetModel
         interfaces = (graphene.relay.Node,)
+
 
 class TargetType(SQLAlchemyObjectType):
     class Meta:
         model = TargetTypeModel
         interfaces = (graphene.relay.Node,)
 
+
 class Query(graphene.ObjectType):
     country_by_id = graphene.Field(Country, id=graphene.Int(required=True))
     mission_by_id = graphene.Field(Mission, id=graphene.Int(required=True))
     missions_between_dates = (graphene.List(Mission,
-            start_date=graphene.String(required=True), end_date=graphene.String(required=True)))
+                                            start_date=graphene.String(required=True),
+                                            end_date=graphene.String(required=True)))
     missions_by_country = graphene.List(Mission, country_id=graphene.Int(required=True))
     missions_by_target_industry = graphene.List(Mission, target_industry=graphene.String(required=True))
 
@@ -69,11 +75,9 @@ class Query(graphene.ObjectType):
             .all()
         )
 
-    @staticmethod
     def resolve_missions_by_country(self, info, country_id):
-        session = db_session()
         return (
-            session.query(Mission)
+            db_session.query(MissionModel)
             .join(Mission.targets)
             .join(Target.city)
             .join(City.country)
@@ -85,14 +89,13 @@ class Query(graphene.ObjectType):
     def resolve_missions_by_target_industry(self, info, target_industry):
         session = db_session()
         return (
-            session.query(Mission)
+            session.query(MissionModel)
             .join(Mission.targets)
             .filter(TargetModel.target_industry == target_industry)
             .all()
         )
 
     ###############################
-
 
 
 # Mutations
@@ -111,7 +114,8 @@ class AddAMission(graphene.Mutation):
 
     address = graphene.Field(lambda: MissionModel)
 
-    def mutate(self, info, mission_id, mission_date, airborne_aircraft, attacking_aircraft, bombing_aircraft, aircraft_returned, aircraft_failed, aircraft_damaged, aircraft_lost):
+    def mutate(self, info, mission_id, mission_date, airborne_aircraft, attacking_aircraft, bombing_aircraft,
+               aircraft_returned, aircraft_failed, aircraft_damaged, aircraft_lost):
         new_mission = MissionModel(mission_id=mission_id, mission_date=mission_date, aircraft_lost=aircraft_lost
                                    , aircraft_returned=aircraft_returned, aircraft_failed=aircraft_failed,
                                    aircraft_damaged=aircraft_damaged, airborne_aircraft=airborne_aircraft,
@@ -119,6 +123,7 @@ class AddAMission(graphene.Mutation):
         db_session.add(new_mission)
         db_session.commit()
         return AddAMission(address=new_mission)
+
 
 # class AddUser(graphene.Mutation):
 #     class Arguments:
@@ -207,7 +212,6 @@ class AddAMission(graphene.Mutation):
 #     delete_address = DeleteAddress.Field()
 #     delete_subject = DeleteSubject.Field()
 #     delete_user = DeleteUser.Field()
-
 
 
 schema = graphene.Schema(query=Query)
