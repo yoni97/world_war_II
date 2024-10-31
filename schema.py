@@ -39,11 +39,8 @@ class Query(graphene.ObjectType):
     country_by_id = graphene.Field(Country, id=graphene.Int(required=True))
     mission_by_id = graphene.Field(Mission, id=graphene.Int(required=True))
     missions_between_dates = (graphene.List(Mission,
-                                            start_date=graphene.String(required=True),
-                                            end_date=graphene.String(required=True)))
-    # find mission by country
+            start_date=graphene.String(required=True), end_date=graphene.String(required=True)))
     missions_by_country = graphene.List(Mission, country_id=graphene.Int(required=True))
-    # find mission by target industry
     missions_by_target_industry = graphene.List(Mission, target_industry=graphene.String(required=True))
 
     @staticmethod
@@ -61,7 +58,7 @@ class Query(graphene.ObjectType):
         return None
 
     @staticmethod
-    def resolve_missions_between_dates(root, info, start_date=None, end_date=None):
+    def resolve_missions_between_dates(root, info, start_date, end_date):
         session = db_session()
         start = datetime.strptime(start_date, '%Y-%m-%d').date()
         end = datetime.strptime(end_date, '%Y-%m-%d').date()
@@ -98,85 +95,31 @@ class Query(graphene.ObjectType):
 
 
 
-    # def resolve_users_by_name(self, info, name_substring):
-    #     substring = f"%{name_substring}%"
-    #     return db_session.query(UserModel).filter(
-    #         UserModel.name.ilike(substring)
-    #     ).all()
-    #
-    # def resolve_subjects_by_name(self, info, name_substring):
-    #     substring = f"%{name_substring}%"
-    #     return db_session.query(SubjectModel).filter(
-    #         SubjectModel.name.ilike(substring)
-    #     ).all()
-    #
-    # def resolve_users_by_subject(self, info, subject_id):
-    #     return db_session.query(UserModel).join(
-    #         UserModel.subjects
-    #     ).filter(
-    #         SubjectModel.id == subject_id
-    #     ).all()
-    #
-    # def resolve_subjects_by_user(self, info, user_id):
-    #     user = db_session.query(UserModel).get(user_id)
-    #     if user:
-    #         return user.subjects
-    #     else:
-    #         return []
-    #
-    # def resolve_users_by_age(self, info, age):
-    #     today = date.today()
-    #     birth_date = date(today.year - age, today.month, today.day)
-    #     return db_session.query(UserModel).filter(
-    #         UserModel.birth_date == birth_date
-    #     ).all()
-    #
-    # def resolve_users_by_age_range(self, info, min_age=None, max_age=None):
-    #     today = date.today()
-    #     query = db_session.query(UserModel)
-    #     if min_age is not None:
-    #         max_birth_date = date(today.year - min_age, today.month, today.day)
-    #         query = query.filter(UserModel.birth_date <= max_birth_date)
-    #     if max_age is not None:
-    #         min_birth_date = date(today.year - max_age, today.month, today.day)
-    #         query = query.filter(UserModel.birth_date >= min_birth_date)
-    #     return query.all()
-    #
-    # def resolve_users_by_birth_date(self, info, birth_date):
-    #     try:
-    #         birth_date_obj = datetime.strptime(birth_date, '%Y-%m-%d').date()
-    #     except ValueError:
-    #         return []
-    #     return db_session.query(UserModel).filter(
-    #         UserModel.birth_date == birth_date_obj
-    #     ).all()
-    #
-    # def resolve_users_by_country(self, info, country):
-    #     return db_session.query(UserModel).join(
-    #         UserModel.address
-    #     ).filter(
-    #         AddressModel.country == country
-    #     ).all()
-
-
-
 # Mutations
 
-# class AddAddress(graphene.Mutation):
-#     class Arguments:
-#         street = graphene.String(required=True)
-#         city = graphene.String(required=True)
-#         country = graphene.String(required=True)
-#
-#     address = graphene.Field(lambda: AddressModel)
-#
-#     def mutate(self, info, street, city, country):
-#         new_address = AddressModel(street=street, city=city, country=country)
-#         db_session.add(new_address)
-#         db_session.commit()
-#         return AddAddress(address=new_address)
-#
-#
+class AddAMission(graphene.Mutation):
+    class Arguments:
+        mission_id = graphene.Int(required=True)
+        mission_date = graphene.Date(required=True)
+        airborne_aircraft = graphene.Float(required=True)
+        attacking_aircraft = graphene.Float(required=True)
+        bombing_aircraft = graphene.Float(required=True)
+        aircraft_returned = graphene.Float(required=True)
+        aircraft_failed = graphene.Float(required=True)
+        aircraft_damaged = graphene.Float(required=True)
+        aircraft_lost = graphene.Float(required=True)
+
+    address = graphene.Field(lambda: MissionModel)
+
+    def mutate(self, info, mission_id, mission_date, airborne_aircraft, attacking_aircraft, bombing_aircraft, aircraft_returned, aircraft_failed, aircraft_damaged, aircraft_lost):
+        new_mission = MissionModel(mission_id=mission_id, mission_date=mission_date, aircraft_lost=aircraft_lost
+                                   , aircraft_returned=aircraft_returned, aircraft_failed=aircraft_failed,
+                                   aircraft_damaged=aircraft_damaged, airborne_aircraft=airborne_aircraft,
+                                   attacking_aircraft=attacking_aircraft, bombing_aircraft=bombing_aircraft)
+        db_session.add(new_mission)
+        db_session.commit()
+        return AddAMission(address=new_mission)
+
 # class AddUser(graphene.Mutation):
 #     class Arguments:
 #         name = graphene.String(required=True)
