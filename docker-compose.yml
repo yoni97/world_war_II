@@ -3,13 +3,13 @@ services:
   db:
     image: postgres:13
     environment:
-      POSTGRES_USER: omermunk
+      POSTGRES_USER: admin
       POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: users_subjects_db
+      POSTGRES_DB: missions_db
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5437:5432"
 
   api:
     build: .
@@ -18,7 +18,7 @@ services:
     ports:
       - "5001:5001"
     environment:
-      - DATABASE_URL=postgresql://omermunk:1234@db:5432/users_subjects_db
+      - DATABASE_URL=postgresql://admin:1234@db:5432/missions_db
 
 volumes:
   db_data:
